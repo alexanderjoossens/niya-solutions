@@ -1,0 +1,9 @@
+
+/* --- niya overrides (not in the original stylesheet) --- */
+/* Long single-word page titles (e.g. "Kantoorschoonmaak") overflowed the screen on phones. */
+h1,h2{overflow-wrap:break-word}
+.first-word{max-width:100%;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:anywhere}
+/* Form sending state */
+form[data-niya-form].is-sending button[type=submit]{opacity:.6;pointer-events:none}
+/* Grid cards (e.g. /offerte/) were wider than a phone screen: let grid items shrink. */
+@media (max-width:600px){.cards>*{min-width:0}}
