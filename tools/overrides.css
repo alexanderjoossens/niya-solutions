@@ -7,3 +7,8 @@ h1,h2{overflow-wrap:break-word}
 form[data-niya-form].is-sending button[type=submit]{opacity:.6;pointer-events:none}
 /* Grid cards (e.g. /offerte/) were wider than a phone screen: let grid items shrink. */
 @media (max-width:600px){.cards>*{min-width:0}}
+
+/* form pages: the first heading became the h1 (SEO) but keeps the h2 look */
+.text_styles h1.seo-h1{font-size:2rem !important;line-height:1.4em;margin-bottom:20px}
+@media (max-width:1024px){.text_styles h1.seo-h1{font-size:1.8rem !important}}
+@media (max-width:740px){.text_styles h1.seo-h1{font-size:1.6rem !important}}

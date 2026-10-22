@@ -431,6 +431,7 @@ def main():
     write_sitemap(built)
     write_search_index(built)
     print('built %d pages, %d images' % (len(built), len(IMG_MAP)))
+    subprocess.run([sys.executable, os.path.join(ROOT, 'tools', 'seo.py')], check=True)
 
 
 def build_404(h):

@@ -2,7 +2,9 @@
 (function () {
   'use strict';
 
-  var FORM_ENDPOINT = 'https://formsubmit.co/ajax/info@niya-solutions.be';
+  /* Formulieren gaan via de centrale AlexWeb-formulierdienst (spamfilter, mail naar info@niya-solutions.be). */
+  var FORMS_URL = 'https://forms.alexweb.be';
+  var FORM_SITE = 'niya-solutions';
   var GTM_ID = 'GTM-PPX774R9';
 
   var $ = function (sel, ctx) { return (ctx || document).querySelector(sel); };
@@ -348,8 +350,29 @@
   }
 
   /* ---------- Forms ---------- */
+  /* Labels of the Webhero form questions -> the field names the form service knows. */
+  function fieldName(field, label, form) {
+    if (field.hasAttribute('data-email')) return 'email';
+    if (field.tagName === 'TEXTAREA') return 'bericht';
+    if (label === 'Telefoonnummer') return 'telefoon';
+    if (label === 'Voornaam') return 'voornaam';
+    if (label === 'Naam' && $('[data-question="Voornaam"]', form)) return 'achternaam';
+    if (/^(Naam|Voor- en achternaam)/.test(label) && label.indexOf('bedrijf') < 0) return 'naam';
+    return label;
+  }
+
   function initForms() {
-    $$('form[data-niya-form]').forEach(function (form) {
+    var forms = $$('form[data-niya-form]');
+    if (!forms.length) return;
+    var token = null;
+    function getToken() {
+      return fetch(FORMS_URL + '/token', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (j) { token = j.t; return token; })
+        .catch(function () { return null; });
+    }
+    var tokenReady = getToken();
+    forms.forEach(function (form) {
       var box = form.closest('[data-part="event"]');
       var errors = $('.error-ul', form);
       var busy = false;
@@ -368,7 +391,7 @@
         e.preventDefault();
         if (busy) return;
         errors.style.display = 'none';
-        var data = { _subject: form.getAttribute('data-subject') || 'Nieuw bericht via niya-solutions.be', _template: 'table', _captcha: 'false' };
+        var data = { site: FORM_SITE, formulier: form.getAttribute('data-name') || 'Website' };
         var missing = null;
         $$('[data-question]', form).forEach(function (field) {
           var label = field.getAttribute('data-question');
@@ -383,21 +406,23 @@
             value = field.value.trim();
           }
           if (required && !value && !missing) missing = label;
-          data[label] = value;
+          data[fieldName(field, label, form)] = value;
         });
         var email = $('input[data-email]', form);
         if (missing) return showError('Het veld ' + missing.toLowerCase() + ' is verplicht.');
         if (email && email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) return showError('Het e-mailadres is ongeldig.');
         if (!$('input[name="gdpr"]', form).checked) return showError('Je moet akkoord gaan met de privacy en algemene voorwaarden.');
         if ($('input[name="contact_me_by_fax_only"]', form).checked) return; // honeypot
-        if (email) data._replyto = email.value.trim();
         data.Pagina = location.href;
         busy = true;
         form.classList.add('is-sending');
-        fetch(FORM_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(data)
+        tokenReady.then(function () {
+          if (token) data._t = token;
+          return fetch(FORMS_URL + '/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(data)
+          });
         }).then(function (r) {
           if (!r.ok) throw new Error(r.status);
           return r.json();
