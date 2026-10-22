@@ -20,11 +20,10 @@ Alle interne links zijn relatief, dus de site werkt zowel op
 
 ## Formulieren
 
-De formulieren (contact, offerte, homepage) versturen via
-[FormSubmit](https://formsubmit.co) naar `info@niya-solutions.be`
-(instelling `FORM_ENDPOINT` bovenaan `assets/js/main.js`).
-**Bij de allereerste inzending stuurt FormSubmit een activatiemail naar
-info@niya-solutions.be — die één keer bevestigen, daarna komen alle berichten binnen.**
+De formulieren (contact, offerte, homepage) versturen via de centrale AlexWeb-dienst
+`forms.alexweb.be` (site-id `niya-solutions` in `site-form-mailer/sites.json`) naar
+`info@niya-solutions.be`, met spamfilter (ondertekend token, honeypot, spamscore, limieten).
+Instelling `FORMS_URL` / `FORM_SITE` bovenaan `assets/js/main.js`.
 
 ## Opnieuw bouwen
 
@@ -33,9 +32,7 @@ python3 tools/fetch_forms.py   # (optioneel) formuliervragen ophalen
 python3 tools/build.py         # genereert alle pagina's uit tools/source/
 ```
 
-## Live zetten op niya-solutions.be (GitHub Pages)
+## Live zetten
 
-1. Repo → Settings → Pages → Deploy from branch `main` / root.
-2. Custom domain: `www.niya-solutions.be` (GitHub maakt dan een `CNAME`-bestand).
-3. DNS bij de domeinregistrar: `CNAME www → <gebruiker>.github.io` en
-   A-records voor het kale domein naar 185.199.108.153, .109.153, .110.153, .111.153.
+Gehost op Railway (project `niya-solutions`), deployt automatisch bij een push naar `main`.
+DNS bij Hostinger: `www` CNAME en `@` ALIAS naar Railway; mail blijft bij Microsoft 365.
